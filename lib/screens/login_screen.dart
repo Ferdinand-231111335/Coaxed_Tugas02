@@ -35,66 +35,77 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Center(
-          child: Text(
-            "Login",
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-        ),
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.network(
-                'https://static.vecteezy.com/system/resources/previews/014/630/917/non_2x/blue-water-wave-line-icon-in-the-sea-free-png.png',
-                height: 150,
-              ),
-              Text('AquaVerse', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-              const SizedBox(height: 20),
-
-              if (_errorMessage != null)
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: const OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: const OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: const Text('Login'),
-              ),
-            ],
-          ),
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      title: const Center(
+        child: Text(
+          "Login",
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
         ),
       ),
-    );
-  }
+    ),
+    body: Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            'lib/assets/Wallpaper Aquaverse.jpg',
+            fit: BoxFit.cover,
+          ),
+        ),
+        SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height, // 🔑 Biar full tinggi
+            child: Column(
+              children: [
+                Image.network(
+                  'https://static.vecteezy.com/system/resources/previews/014/630/917/non_2x/blue-water-wave-line-icon-in-the-sea-free-png.png',
+                  height: 150,
+                ),
+                const Text(
+                  'AquaVerse',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                if (_errorMessage != null)
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _login,
+                  child: const Text('Login'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

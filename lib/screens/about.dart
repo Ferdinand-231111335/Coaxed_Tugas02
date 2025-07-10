@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_application_1/screens/login_screen.dart';
 import 'home_page.dart';
 import '../providers/theme_provider.dart';
+import 'donasi.dart';
 
 class About extends StatefulWidget {
   const About({super.key, required this.username});
@@ -27,9 +28,12 @@ class _AboutState extends State<About> {
           Row(
             children: [
               Icon(themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
-              Switch(
-                value: themeProvider.isDarkMode,
-                onChanged: (_) => themeProvider.toggleTheme(),
+              Tooltip(
+                message: 'Mode Terang/Gelap',
+                child: Switch(
+                  value: themeProvider.isDarkMode,
+                  onChanged: (_) => themeProvider.toggleTheme(),
+                ),
               ),
             ],
           ),
@@ -75,62 +79,116 @@ class _AboutState extends State<About> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.volunteer_activism),
+              title: const Text('Donasi'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi(username: widget.username,)));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text('Keluar'),
-              onTap: () {
-                Future.delayed(const Duration(milliseconds: 300), () {
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+              onTap: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Konfirmasi'),
+                    content: const Text('Apakah kamu yakin ingin keluar?'),
+                    actions: [
+                      TextButton(
+                        child: const Text('Batal'),
+                        onPressed: () => Navigator.pop(context, false),
+                      ),
+                      TextButton(
+                        child: const Text('Ya, Keluar'),
+                        onPressed: () => Navigator.pop(context, true),
+                      ),
+                    ],
+                  ),
                 );
-                });
+
+                if (shouldLogout == true) {
+                  Navigator.pop(context);
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
+                    );
+                  });
+                }
               },
             ),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: SizedBox.expand(
+        child: Stack(
           children: [
-            Center(
-              child: Image.network(
-                'https://static.vecteezy.com/system/resources/previews/014/630/917/non_2x/blue-water-wave-line-icon-in-the-sea-free-png.png',
-                height: 150,
+            Positioned.fill(
+              child: Image.asset(
+                'lib/assets/Wallpaper Aquaverse.jpg',
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Tentang AquaVerse',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Center(
+                  child: Image.network(
+                    'https://static.vecteezy.com/system/resources/previews/014/630/917/non_2x/blue-water-wave-line-icon-in-the-sea-free-png.png',
+                    height: 150,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide.color ?? Colors.grey,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Tentang AquaVerse',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'AquaVerse adalah aplikasi edukatif yang dibuat untuk meningkatkan kesadaran dan pengetahuan '
+                        'tentang keberagaman makhluk air, baik hewan maupun tumbuhan. '
+                        'Aplikasi ini dikembangkan oleh tim yang peduli terhadap lingkungan, '
+                        'khususnya ekosistem perairan yang semakin terancam oleh aktivitas manusia.',
+                        style: TextStyle(fontSize: 16),
+                        textAlign: TextAlign.justify,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Tujuan utama AquaVerse adalah memberikan informasi yang menarik tentang '
+                        'makhluk air dari berbagai habitat seperti air tawar dan air asin, '
+                        'serta status kepunahan makhluk air. '
+                        'Aplikasi ini juga bertujuan untuk menjadi media pembelajaran bagi pelajar, guru, dan '
+                        'masyarakat umum dalam memahami pentingnya menjaga kelestarian air dan makhluk di dalamnya.',
+                        style: TextStyle(fontSize: 16),
+                        textAlign: TextAlign.justify,
+                      ),
+                      SizedBox(height: 50,),
+                      const Text(
+                        'Salam dari kami, Coaxed',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'AquaVerse adalah aplikasi edukatif yang dibuat untuk meningkatkan kesadaran dan pengetahuan '
-              'tentang keberagaman makhluk air, baik hewan maupun tumbuhan. '
-              'Aplikasi ini dikembangkan oleh tim yang peduli terhadap lingkungan, '
-              'khususnya ekosistem perairan yang semakin terancam oleh aktivitas manusia.',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.justify,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Tujuan utama AquaVerse adalah memberikan informasi yang menarik tentang '
-              'makhluk air dari berbagai habitat seperti air tawar dan air asin, '
-              'serta status kepunahan makhluk air. '
-              'Aplikasi ini juga bertujuan untuk menjadi media pembelajaran bagi pelajar, guru, dan '
-              'masyarakat umum dalam memahami pentingnya menjaga kelestarian air dan makhluk di dalamnya.',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.justify,
-            ),
-            SizedBox(height: 50,),
-            const Text(
-              'Salam dari kami, Coaxed',
-              style: TextStyle(fontSize: 16),
-            )
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
