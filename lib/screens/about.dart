@@ -4,10 +4,12 @@ import 'package:flutter_application_1/screens/login_screen.dart';
 import 'home_page.dart';
 import '../providers/theme_provider.dart';
 import 'donasi.dart';
+import '../providers/profile_provider.dart';
+import 'profile_page.dart';
 
 class About extends StatefulWidget {
-  const About({super.key, required this.username});
-  final String username;
+  const About({super.key});
+
   @override
   State<About> createState() => _AboutState();
 }
@@ -16,6 +18,8 @@ class _AboutState extends State<About> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final username = Provider.of<ProfileProvider>(context).username;
+    final image = Provider.of<ProfileProvider>(context).image;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,15 +51,30 @@ class _AboutState extends State<About> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Aquaverse', style: TextStyle(color: Colors.white, fontSize: 24)),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Halo, ${widget.username}!',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    backgroundImage: image != null ? FileImage(image) : null,
+                    child: image == null
+                        ? const Icon(Icons.person, size: 40, color: Colors.blueGrey)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Aquaverse',
+                            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text('Halo, $username!',
+                            style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -65,8 +84,20 @@ class _AboutState extends State<About> {
               title: const Text('Beranda'),
               onTap: () {
                 Future.delayed(const Duration(milliseconds: 300), () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage(username: widget.username,)));
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>  HomePage()));
                 });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profil'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfilePage(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -83,7 +114,7 @@ class _AboutState extends State<About> {
               title: const Text('Donasi'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi(username: widget.username,)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi()));
               },
             ),
             ListTile(

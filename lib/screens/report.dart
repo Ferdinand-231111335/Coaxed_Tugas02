@@ -6,10 +6,13 @@ import 'home_page.dart';
 import 'donasi.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/profile_provider.dart';
+import 'profile_page.dart';
+
+enum JenisMasalah { bug, error, lainnya }
 
 class Report extends StatefulWidget {
-  const Report({super.key, required this.username});
-  final String username;
+  const Report({super.key});
 
   @override
   State<Report> createState() => _ReportState();
@@ -19,6 +22,7 @@ class _ReportState extends State<Report> {
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
   DateTime? _selectedDate;
+  JenisMasalah? _selectedJenis;
 
   @override
   void dispose() {
@@ -28,21 +32,14 @@ class _ReportState extends State<Report> {
   }
 
   void _submitReport() {
-    final judul = _judulController.text.trim();
     final deskripsi = _deskripsiController.text.trim();
-    final tanggal = _selectedDate ?? DateTime.now();
 
-    if (judul.isEmpty || deskripsi.isEmpty) {
+    if (_selectedJenis == null || deskripsi.isEmpty || (_selectedJenis == JenisMasalah.lainnya && _judulController.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Mohon lengkapi semua data.')),
       );
       return;
     }
-
-    print("Laporan dikirim:");
-    print("Judul: $judul");
-    print("Deskripsi: $deskripsi");
-    print("Tanggal: $tanggal");
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Laporan berhasil dikirim!')),
@@ -50,47 +47,53 @@ class _ReportState extends State<Report> {
 
     _judulController.clear();
     _deskripsiController.clear();
-    setState(() => _selectedDate = null);
+    setState(() {
+      _selectedJenis = null;
+      _selectedDate = null;
+    });
   }
 
   Future<void> _pickDate() async {
-    final pickedDate = await showDatePicker(
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: DateTime.now(),
+    firstDate: DateTime.now().subtract(const Duration(days: 30)),
+    lastDate: DateTime.now(),
+  );
+
+  if (pickedDate != null) {
+    final pickedTime = await showTimePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now().subtract(const Duration(days: 30)),
-      lastDate: DateTime.now(),
+      initialTime: TimeOfDay.now(),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
     );
 
-    if (pickedDate != null) {
-      final pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-            child: child!,
-          );
-        },
+    if (pickedTime != null) {
+      final combinedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
       );
-
-      if (pickedTime != null) {
-        final combinedDateTime = DateTime(
-          pickedDate.year,
-          pickedDate.month,
-          pickedDate.day,
-          pickedTime.hour,
-          pickedTime.minute,
-        );
-        setState(() {
-          _selectedDate = combinedDateTime;
-        });
-      }
+      setState(() {
+        _selectedDate = combinedDateTime;
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final username = Provider.of<ProfileProvider>(context).username;
+    final image = Provider.of<ProfileProvider>(context).image;
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -117,15 +120,34 @@ class _ReportState extends State<Report> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Aquaverse', style: TextStyle(color: Colors.white, fontSize: 24)),
-                  const SizedBox(height: 10),
-                  Text('Halo, ${widget.username}!',
-                      style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    backgroundImage: image != null ? FileImage(image) : null,
+                    child: image == null
+                        ? const Icon(Icons.person, size: 40, color: Colors.blueGrey)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Aquaverse',
+                            style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text('Halo, $username!',
+                            style: const TextStyle(color: Colors.white70, fontSize: 16)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -133,7 +155,19 @@ class _ReportState extends State<Report> {
               leading: const Icon(Icons.home),
               title: const Text('Beranda'),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage(username: widget.username)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profil'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfilePage(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -142,7 +176,7 @@ class _ReportState extends State<Report> {
               onTap: () {
                 Navigator.pop(context);
                 Future.delayed(const Duration(milliseconds: 300), () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => About(username: widget.username)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => About()));
                 });
               },
             ),
@@ -151,7 +185,7 @@ class _ReportState extends State<Report> {
               title: const Text('Donasi'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi(username: widget.username)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi()));
               },
             ),
             ListTile(
@@ -213,21 +247,69 @@ class _ReportState extends State<Report> {
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 20),
-                      TextField(
-                        controller: _judulController,
-                        decoration: InputDecoration(
-                          labelText: 'Judul Masalah',
-                          border: const OutlineInputBorder(),
-                          filled: true,
+
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).inputDecorationTheme.fillColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide.color ?? Colors.grey,
+                          ),
                         ),
+                        child: Column(
+                          children: [
+                            const Text('Pilih Jenis Masalah:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            CheckboxListTile(
+                        title: const Text('Bug'),
+                        value: _selectedJenis == JenisMasalah.bug,
+                        onChanged: (_) {
+                          setState(() {
+                            _selectedJenis = JenisMasalah.bug;
+                          });
+                        },
                       ),
+                      CheckboxListTile(
+                        title: const Text('Error'),
+                        value: _selectedJenis == JenisMasalah.error,
+                        onChanged: (_) {
+                          setState(() {
+                            _selectedJenis = JenisMasalah.error;
+                          });
+                        },
+                      ),
+                      CheckboxListTile(
+                        title: const Text('Lainnya'),
+                        value: _selectedJenis == JenisMasalah.lainnya,
+                        onChanged: (_) {
+                          setState(() {
+                            _selectedJenis = JenisMasalah.lainnya;
+                          });
+                        },
+                      ),
+                      if (_selectedJenis == JenisMasalah.lainnya) ...[
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _judulController,
+                          decoration: const InputDecoration(
+                            labelText: 'Judul Masalah',
+                            border: OutlineInputBorder(),
+                            filled: true,
+                          ),
+                        ),
+                      ],
+                          ],
+                        )
+                        ),
+                      
                       const SizedBox(height: 16),
+
                       TextField(
                         controller: _deskripsiController,
                         maxLines: 4,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Deskripsi Masalah',
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                           filled: true,
                         ),
                       ),
@@ -240,7 +322,7 @@ class _ReportState extends State<Report> {
                             color: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide.color ?? Colors.grey,
                           ),
                         ),
-                        child: ListTile(
+                        child:  ListTile(
                           title: Text(
                             _selectedDate == null
                                 ? 'Pilih Tanggal dan Waktu Terjadi'

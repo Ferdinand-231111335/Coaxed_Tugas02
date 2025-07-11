@@ -75,6 +75,7 @@ class _AddMakhlukState extends State<AddMakhluk> {
                   onChanged: (val) => setState(() => _habitat = val!),
                   decoration: const InputDecoration(labelText: 'Habitat'),
                 ),
+                SizedBox(height: 10,),
                 DropdownButtonFormField<String>(
                   value: _kategori,
                   items: ['Hewan', 'Tumbuhan']

@@ -8,10 +8,11 @@ import 'about.dart';
 import '../screens/add_makhluk.dart';
 import 'donasi.dart';
 import 'report.dart';
+import 'profile_page.dart';
+import '../providers/profile_provider.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.username});
-  final String username;
+  const HomePage({super.key});
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -25,6 +26,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final username = Provider.of<ProfileProvider>(context).username;
+    final image = Provider.of<ProfileProvider>(context).image;
 
     return Scaffold(
       appBar: AppBar(
@@ -64,7 +67,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => Report(username: widget.username),
+                    builder: (_) => Report(),
                   ),
                 );
               }
@@ -123,26 +126,63 @@ class _HomePageState extends State<HomePage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Aquaverse', style: TextStyle(color: Colors.white, fontSize: 24)),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Halo, ${widget.username}!',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
+  decoration: BoxDecoration(
+    color: Theme.of(context).colorScheme.primary,
+  ),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.start,
+    children: [
+      const Text(
+        'Aquaverse',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.white,
+            backgroundImage: image != null ? FileImage(image) : null,
+            child: image == null
+                ? const Icon(Icons.person, size: 40, color: Colors.blueGrey)
+                : null,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              username,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
               ),
             ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+
             ListTile(
               leading: const Icon(Icons.home),
               title: const Text('Beranda'),
               onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profil'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfilePage(),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.info),
@@ -150,7 +190,7 @@ class _HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.pop(context);
                 Future.delayed(const Duration(milliseconds: 300), () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  About(username: widget.username)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  About()));
                 });
               },
             ),
@@ -159,7 +199,7 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Donasi'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi(username: widget.username,)));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi()));
               },
             ),
             ListTile(
@@ -396,7 +436,7 @@ class _HomePageState extends State<HomePage> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (_) => DetailPage(makhluk: makhluk, username: widget.username),
+                                                builder: (_) => DetailPage(makhluk: makhluk),
                                               ),
                                             );
                                           },

@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart';
-import '../models/makhluk.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
-import 'about.dart';
-import 'login_screen.dart';
-import 'donasi.dart';
 import '../providers/profile_provider.dart';
-import 'profile_page.dart';
+import 'edit_profile.dart';
+import 'about.dart';
+import 'donasi.dart';
+import 'home_page.dart';
+import 'login_screen.dart';
+import '../providers/theme_provider.dart';
 
-class DetailPage extends StatelessWidget {
-  final Makhluk makhluk;
-  const DetailPage({super.key, required this.makhluk});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final username = Provider.of<ProfileProvider>(context).username;
-    final image = Provider.of<ProfileProvider>(context).image;
-    
+    return Consumer<ProfileProvider>(
+    builder: (context, profileProvider, _) {
+      final username = profileProvider.username;
+      final image = profileProvider.image;
+      final country = profileProvider.country;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dukung Kami', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text('Profil'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           Row(
@@ -78,20 +79,13 @@ class DetailPage extends StatelessWidget {
               leading: const Icon(Icons.home),
               title: const Text('Beranda'),
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) =>  HomePage()));
-              }
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()));
+              },
             ),
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Profil'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ProfilePage(),
-                  ),
-                );
-              },
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.info),
@@ -99,7 +93,7 @@ class DetailPage extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Future.delayed(const Duration(milliseconds: 300), () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) =>  About()));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const About()));
                 });
               },
             ),
@@ -108,7 +102,7 @@ class DetailPage extends StatelessWidget {
               title: const Text('Donasi'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => Donasi()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const Donasi()));
               },
             ),
             ListTile(
@@ -151,20 +145,27 @@ class DetailPage extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'lib/assets/Wallpaper Aquaverse.jpg',
-              fit: BoxFit.cover,
+          child: Image.asset(
+            'lib/assets/Wallpaper Aquaverse.jpg',
+            fit: BoxFit.cover,
             ),
           ),
-          SingleChildScrollView(
-          child: Column(
-            children: [
-              Image.network(makhluk.gambar1, errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.broken_image, size: 100, color: Colors.grey);
-              },),
-              SizedBox(height: 15),
-              Container(
-                padding: const EdgeInsets.all(16),
+          Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage: image != null ? FileImage(image) : null,
+                  child: image == null
+                      ? const Icon(Icons.person, size: 60, color: Colors.white)
+                      : null,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(8),
@@ -172,30 +173,44 @@ class DetailPage extends StatelessWidget {
                       color: Theme.of(context).inputDecorationTheme.enabledBorder?.borderSide.color ?? Colors.grey,
                     ),
                   ),
-                child: Column(
-                  children: [
-                    Text(makhluk.nama, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                    Text('Habitat: ${makhluk.habitat}', style: TextStyle(fontSize: 18)),
-                    Text('Kategori: ${makhluk.kategori}', style: TextStyle(fontSize: 18)),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(makhluk.deskripsi),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text('Status: ${makhluk.status}', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                )
-              ),
-              SizedBox(height: 20),
-              Image.network(makhluk.gambar2, errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.broken_image, size: 100, color: Colors.grey);
-              },),
-            ],
+                  child: Column(
+                    children: [
+                      Text('Username: $username', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 20),
+                      country == null
+                    ? const Text('Belum memilih negara')
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Negara :', style: const TextStyle(fontSize: 16)),
+                          Text(country.flagEmoji, style: const TextStyle(fontSize: 30)),
+                          const SizedBox(width: 8),
+                          Text('${country.name} (+${country.phoneCode})', style: const TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ],
+                  )
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Profil'),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => EditProfile(
+                        username: username,
+                        currentImagePath: image?.path,
+                      ),
+                    ));
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ]),
     );
-  }
+  });
+}
 }

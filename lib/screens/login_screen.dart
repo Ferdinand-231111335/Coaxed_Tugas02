@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screens/home_page.dart';
+import 'home_page.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,10 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _errorMessage = null;
       });
+      Provider.of<ProfileProvider>(context, listen: false).setUsername(username);
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(username: username),
+          builder: (context) => HomePage(),
         ),
       );
     }
@@ -39,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       title: const Center(
         child: Text(
           "Login",
